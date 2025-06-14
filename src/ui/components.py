@@ -41,17 +41,6 @@ def render_upload_section():
         accept_multiple_files=True
     )
     
-    # ファイルサイズ制限についての詳細情報を表示
-    st.markdown(f"""
-    <div class="info-box">
-    📋 <strong>アップロード制限について</strong><br>
-    • 1ファイルあたり最大{config.max_file_size_mb}MB（{config.max_file_size_mb/1024:.1f}GB）まで対応<br>
-    • 複数ファイルの同時アップロード可能（推奨: {config.max_concurrent_files}ファイル以下）<br>
-    • 推奨サイズ: {config.recommended_file_size_mb}MB以下（安定した処理のため）<br>
-    • {config.recommended_file_size_mb}MB以上のファイルでは処理に時間がかかる場合があります
-    </div>
-    """, unsafe_allow_html=True)
-    
     # アップロードされたファイルの情報表示
     if uploaded_files:
         _display_uploaded_files_info(uploaded_files)
@@ -96,51 +85,59 @@ def render_quality_check_section():
     st.markdown("### 🎯 品質チェック設定")
     
     # 担当者設定（カンマ区切りのテキスト入力）
-    st.markdown("#### 👥 担当者設定")
+    st.markdown("#### 担当者設定")
     
-    # Difyで定義されている担当者リスト（参考表示用）
-    available_checkers = [
+    # デフォルト担当者リスト（品質チェック対象）
+    default_checkers = [
         "野田", "永廣", "猪俣", "渡辺", "工藤", "前川", "田本", "立川", "濱田"
     ]
     
-    # 参考として表示
-    st.caption(f"参考：登録済み担当者 - {', '.join(available_checkers)}")
+    # デフォルト値として表示
+    default_value = ", ".join(default_checkers)
+    st.caption(f"デフォルト担当者: {default_value}")
     
-    # テキスト入力（カンマ区切り）
+    # テキスト入力（カンマ区切り）- デフォルト値を設定
     checker_input = st.text_input(
-        "品質チェックを行う担当者名をカンマ区切りで入力してください",
-        value="",
-        help="例：田中, 佐藤, 鈴木（カンマ区切りで複数の担当者を入力できます）",
+        "品質チェックを行う担当者名をカンマ区切りで入力してください（空欄の場合はデフォルト担当者を使用）",
+        value=default_value,
+        help="例：田中, 佐藤, 鈴木（カンマ区切りで複数の担当者を入力できます。空欄の場合はデフォルト担当者が使用されます）",
         key="quality_check_checker_input"
     )
     
     # カンマ区切りの入力を処理
     selected_checkers = []
-    if checker_input:
+    if checker_input and checker_input.strip():
         # カンマで分割して空白を削除
         selected_checkers = [name.strip() for name in checker_input.split(',') if name.strip()]
+    else:
+        # 入力が空の場合はデフォルト担当者を使用
+        selected_checkers = default_checkers
     
     # 担当者プレビュー表示
     col1, col2 = st.columns([3, 1])
     
     with col1:
         if selected_checkers:
-            st.markdown("**✅ 入力された担当者:**")
-            # 2列で表示（多数の場合の見やすさを考慮）
+            is_default = selected_checkers == default_checkers
+            status_emoji = "🔧" if is_default else "✅"
+            status_text = "デフォルト担当者" if is_default else "カスタム担当者"
+            
+            st.markdown(f"**{status_emoji} {status_text}:**")
+            # 3列で表示（多数の場合の見やすさを考慮）
             checker_cols = st.columns(3)
             for i, checker in enumerate(selected_checkers):
                 with checker_cols[i % 3]:
                     st.markdown(f"　• {checker}")
         else:
-            st.info("👆 上記に担当者名をカンマ区切りで入力してください")
+            st.info("担当者が設定されていません")
     
     with col2:
         if selected_checkers:
-            st.metric("入力担当者数", f"{len(selected_checkers)}名")
-            if len(selected_checkers) > 5:
+            st.metric("担当者数", f"{len(selected_checkers)}名")
+            if len(selected_checkers) > 10:
                 st.warning("担当者数が多いです")
         else:
-            st.metric("入力担当者数", "0名")
+            st.metric("担当者数", "0名")
     
     st.markdown('</div>', unsafe_allow_html=True)
     return selected_checkers

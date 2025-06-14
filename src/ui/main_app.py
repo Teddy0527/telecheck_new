@@ -27,8 +27,10 @@ from src.utils.speaker_detection import detect_teleapo_speaker
 from src.config import config
 
 # 新しいモジュール構造を使用
-from src.quality_check import fix_transcription
 from src.common.error_handler import ErrorHandler, safe_execute, ValidationError, APIError
+
+# reference.yml に基づくデフォルトのテレアポ担当者リスト
+DEFAULT_CHECKERS = ["工藤", "前川", "猪俣", "田本", "立川", "濱田"]
 
 
 def main():
@@ -44,6 +46,9 @@ def main():
     if not all(clients.values()):
         show_error_message("API接続の初期化に失敗しました。設定を確認してください。")
         return
+    
+    # clientsをsession_stateに保存
+    st.session_state['clients'] = clients
     
     # タブの設定
     tab1, tab2 = st.tabs(["🎤 話者分離文字起こし", "🔍 品質チェック"])
@@ -103,94 +108,133 @@ def _handle_transcription_tab(clients):
 def _process_transcription_files(uploaded_files, clients):
     """アップロードされたファイルの文字起こし処理"""
     total_files = len(uploaded_files)
+    if total_files == 0:
+        return
+
+    st.markdown("### 処理状況")
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    results_container = st.container() # 結果表示用のコンテナ
+    
     processed_files = 0
     error_files = 0
-
-    # プログレスバーの初期化
-    overall_progress = st.progress(0.0)
+    
+    # デフォルト担当者（固有名詞置換用）
+    checker_str = ", ".join(DEFAULT_CHECKERS)
     
     for i, uploaded_file in enumerate(uploaded_files):
+        # 進捗表示の更新
+        progress = (i + 1) / total_files
+        status_text.markdown(f"""
+        <div class="info-box">
+            <p style='margin-bottom: 5px;'>
+                {i + 1}/{total_files}件の処理を開始: <strong>{uploaded_file.name}</strong>
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        progress_bar.progress(progress)
+        
         file_info = config.get_file_size_info(uploaded_file.size)
         
-        with st.spinner(f"🎤 {uploaded_file.name} ({file_info['size_mb']:.1f}MB) を処理中... ({i+1}/{total_files})"):
-            try:
-                # 大きなファイルの場合は追加の警告
-                if file_info["is_very_large"]:
-                    st.info(f"🕐 大容量ファイル({file_info['size_mb']:.1f}MB)のため、処理に10分以上かかる場合があります")
-                
-                # 話者分離付き文字起こし
-                transcript_result = transcribe_with_speaker_diarization(uploaded_file, clients['assemblyai'])
-                
-                if transcript_result:
-                    # テレアポ担当者を自動判定
-                    try:
-                        teleapo_speaker = detect_teleapo_speaker(transcript_result)
-                        if not teleapo_speaker:
-                            teleapo_speaker = "A"  # デフォルト値
-                    except Exception as speaker_error:
-                        st.warning(f"⚠️ 話者判定でエラーが発生しました: {str(speaker_error)}")
-                        teleapo_speaker = "A"  # デフォルト値
-                    
-                    # フォーマット済み文字起こし
-                    try:
-                        formatted_transcript = format_transcript_with_speakers(transcript_result, teleapo_speaker)
-                    except Exception as format_error:
-                        st.warning(f"⚠️ フォーマット処理でエラーが発生しました: {str(format_error)}")
-                        # フォールバック：基本的な文字起こし結果を使用
-                        formatted_transcript = transcript_result.get("full_text", "文字起こし結果を取得できませんでした。")
-                    
-                    # 結果表示
+        try:
+            # 大きなファイルの場合は追加の警告
+            if file_info["is_very_large"]:
+                st.info(f"🕐 {uploaded_file.name} (大容量ファイル: {file_info['size_mb']:.1f}MB) は処理に10分以上かかる場合があります")
+
+            # 話者分離付き文字起こし
+            def progress_callback(message: str):
+                # ファイルごとの進捗表示を更新
+                status_text.markdown(f"""
+                <div class="info-box">
+                    <p style='margin-bottom: 5px;'>
+                        処理中 ({i + 1}/{total_files}): <strong>{uploaded_file.name}</strong>
+                        <br>
+                        {message}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            transcript_result = transcribe_with_speaker_diarization(
+                uploaded_file, 
+                clients['assemblyai'],
+                on_progress=progress_callback
+            )
+
+            if transcript_result:
+                # 処理完了後、最終的なステータスを表示
+                status_text.markdown(f"""
+                <div class="info-box">
+                    <p style='margin-bottom: 5px;'>
+                        ✅ 処理完了: <strong>{uploaded_file.name}</strong>
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # テレアポ担当者を自動判定
+                teleapo_speaker = detect_teleapo_speaker(transcript_result) or "A"
+
+                # フォーマット済み文字起こし（固有名詞置換を含む）
+                formatted_transcript = format_transcript_with_speakers(
+                    transcript_result, 
+                    teleapo_speaker, 
+                    checker_str, 
+                    clients['openai']
+                )
+
+                # 結果表示（コンテナ内）
+                with results_container:
                     _display_transcription_result(uploaded_file, file_info, transcript_result, teleapo_speaker)
-                    
-                    # Google Sheetsに保存
-                    try:
-                        write_to_sheets(clients['sheets'], formatted_transcript, uploaded_file.name)
-                        show_success_message(f"{uploaded_file.name} ({file_info['size_mb']:.1f}MB) の処理完了")
-                        processed_files += 1
-                    except Exception as sheets_error:
-                        st.error(f"Google Sheetsへの保存に失敗しました: {str(sheets_error)}")
-                        st.info("文字起こしは完了していますが、保存できませんでした。")
-                        processed_files += 1  # 文字起こし自体は成功
-                else:
-                    show_error_message(f"{uploaded_file.name} ({file_info['size_mb']:.1f}MB) の文字起こしに失敗しました")
-                    error_files += 1
-                    
-            except Exception as e:
-                show_error_message(f"{uploaded_file.name} の処理中にエラーが発生しました: {str(e)}")
+
+                # Google Sheetsに保存
+                write_to_sheets(clients['sheets'], formatted_transcript, uploaded_file.name)
+                processed_files += 1
+            else:
+                show_error_message(f"{uploaded_file.name} ({file_info['size_mb']:.1f}MB) の文字起こしに失敗しました")
                 error_files += 1
-        
-        # 全体進捗の更新
-        overall_progress.progress((i + 1) / total_files)
+
+        except Exception as e:
+            show_error_message(f"{uploaded_file.name} の処理中にエラーが発生しました: {str(e)}")
+            error_files += 1
 
     # 全体処理完了メッセージ
+    status_text.empty() # 最終的なサマリーの前にステータスをクリア
     _display_processing_summary(processed_files, error_files)
 
 
 def _display_transcription_result(uploaded_file, file_info, transcript_result, teleapo_speaker):
     """文字起こし結果の表示"""
-    st.success(f"✅ {uploaded_file.name} ({file_info['size_mb']:.1f}MB) の話者分離付き文字起こしが完了")
-    st.info(f"📊 テレアポ担当者として判定: {teleapo_speaker}")
-    
-    # 話者別発言数の表示
-    try:
-        speakers = transcript_result.get("speakers", {})
-        if speakers:
-            st.markdown("**📊 話者別発言数:**")
-            cols = st.columns(len(speakers))
-            for i, (speaker, statements) in enumerate(speakers.items()):
-                marker = "🎯" if speaker == teleapo_speaker else "👤"
-                statement_count = len(statements) if isinstance(statements, list) else 0
-                with cols[i]:
-                    st.metric(f"{marker} {speaker}", f"{statement_count}発言")
-        else:
-            st.write("📊 話者分離情報は利用できません")
-    except Exception as display_error:
-        st.write(f"表示エラー: {str(display_error)}")
-    
-    # 文字起こし結果の表示
-    formatted_transcript = format_transcript_with_speakers(transcript_result, teleapo_speaker)
-    if formatted_transcript:
-        with st.expander("📄 文字起こし結果を表示", expanded=False):
+    with st.expander(f"📄 {uploaded_file.name} ({file_info['size_mb']:.1f}MB) - {teleapo_speaker}が担当者と判定", expanded=False):
+        # 話者別発言数の表示
+        try:
+            speakers = transcript_result.get("speakers", {})
+            if speakers:
+                st.markdown("**📊 話者別発言数:**")
+                cols = st.columns(len(speakers))
+                for i, (speaker, statements) in enumerate(speakers.items()):
+                    marker = "🎯" if speaker == teleapo_speaker else "👤"
+                    statement_count = len(statements) if isinstance(statements, list) else 0
+                    with cols[i]:
+                        st.metric(f"{marker} {speaker}", f"{statement_count}発言")
+            else:
+                st.write("📊 話者分離情報は利用できません")
+        except Exception as display_error:
+            st.write(f"表示エラー: {str(display_error)}")
+        
+        # 文字起こし結果の表示（固有名詞置換済み）
+        clients = st.session_state.get('clients', {})
+        openai_client = clients.get('openai')
+        
+        # デフォルト担当者（表示用）
+        checker_str = ", ".join(DEFAULT_CHECKERS)
+        
+        formatted_transcript = format_transcript_with_speakers(
+            transcript_result, 
+            teleapo_speaker, 
+            checker_str, 
+            openai_client
+        )
+        
+        if formatted_transcript:
             st.text_area(
                 "文字起こし内容", 
                 formatted_transcript, 
@@ -214,6 +258,10 @@ def _handle_quality_check_tab(clients):
     # 品質チェック設定セクション
     selected_checkers = render_quality_check_section()
     
+    # デフォルト担当者（render_quality_check_sectionと同じ）
+    # NOTE: このリストは `reference.yml` と同期しています
+    default_checkers = DEFAULT_CHECKERS
+    
     # 処理設定
     col1, col2 = st.columns(2)
     with col1:
@@ -232,26 +280,25 @@ def _handle_quality_check_tab(clients):
     
     # 品質チェック実行
     if run_check_button:
+        # 担当者が空の場合はデフォルト担当者を使用
         if not selected_checkers:
-            show_error_message("担当者を選択してください")
-            return
+            selected_checkers = default_checkers
+            st.info(f"ℹ️ デフォルト担当者を使用します: {', '.join(default_checkers)}")
         
         # 進捗表示エリア
         progress_bar = st.progress(0)
         status_text = st.empty()
         
         try:
-            checker_str = ", ".join(selected_checkers)
-            
             with st.spinner("🔍 品質チェック処理を実行中..."):
                 run_quality_check_batch(
                     clients['sheets'], 
                     clients['openai'], 
-                    checker_str, 
                     progress_bar, 
                     status_text, 
                     max_rows=max_rows,
-                    batch_size=config.default_batch_size
+                    batch_size=config.default_batch_size,
+                    checkers=selected_checkers
                 )
             
             show_success_message("品質チェックが完了しました")

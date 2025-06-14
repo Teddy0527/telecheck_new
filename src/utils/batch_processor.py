@@ -1,18 +1,26 @@
 """
-バッチ処理用のワークフロー管理モジュール
+バッチ処理用のワークフロー管理モジュール（リファクタリング版）
+新しい品質チェック構造に対応
 """
 
 import streamlit as st
 import time
-from src.utils.quality_check import run_workflow
+import re
+import json
 from src.api.sheets_client import get_target_rows, update_quality_check_results
+from src.common.error_handler import ErrorHandler, safe_execute
+from src.quality_check.core import QualityChecker
+from typing import Optional
 
 
-def run_quality_check_batch(gc, client, checker_str, progress_bar, status_text, max_rows=50, batch_size=10):
-    """バッチ処理で品質チェックを実行"""
+def run_quality_check_batch(sheets_client, openai_client, progress_bar, status_text, max_rows, batch_size, checkers):
+    """
+    スプレッドシートからデータを読み込み、品質チェックを実行して結果を書き込む。
+    checkers引数を追加。
+    """
     try:
         # 処理対象の行を取得
-        header_row, target_rows = get_target_rows(gc, max_rows)
+        header_row, target_rows = get_target_rows(sheets_client, max_rows)
         
         if not target_rows:
             st.markdown('<div class="info-box">処理対象のデータがありません</div>', unsafe_allow_html=True)
@@ -28,17 +36,36 @@ def run_quality_check_batch(gc, client, checker_str, progress_bar, status_text, 
         metrics_containers = _setup_metrics_display(len(target_rows))
         
         # スプレッドシートを取得
-        spreadsheet = gc.open("テレアポチェックシート")
+        spreadsheet = sheets_client.open("テレアポチェックシート")
         worksheet = spreadsheet.worksheet("Difyテスト")
+        
+        # 新しい品質チェッカーをインスタンス化
+        quality_checker = QualityChecker(openai_client)
         
         # バッチ処理実行
         _process_batch(
-            target_rows, checker_str, client, worksheet, header_map,
-            batch_size, progress_bar, status_text, metrics_containers
+            target_rows, quality_checker, worksheet, header_map,
+            batch_size, progress_bar, status_text, metrics_containers, checkers
         )
         
     except Exception as e:
-        st.error(f"バッチ処理エラー: {str(e)}")
+        ErrorHandler.handle_error(e, "バッチ処理", show_details=True)
+
+
+def _is_conversation_too_short(raw_transcript: str, min_utterances: int = 3) -> bool:
+    """
+    会話が品質チェックを行うには短すぎるかどうかを判定する。
+    """
+    if not raw_transcript:
+        return True
+    utterances = re.findall(r'\[(?:テレアポ担当者|顧客)\]\s*\S+', raw_transcript)
+    return len(utterances) < min_utterances
+
+def _create_no_conversation_result(quality_checker: QualityChecker) -> str:
+    """「会話記録なし」という結果のJSON文字列を作成する。"""
+    result_dict = {header: "" for header in quality_checker.SPREADSHEET_HEADERS}
+    result_dict["報告まとめ"] = "会話記録なし"
+    return json.dumps(result_dict, ensure_ascii=False, indent=2)
 
 
 def _create_header_map(header_row):
@@ -84,9 +111,9 @@ def _setup_metrics_display(total_rows):
     }
 
 
-def _process_batch(target_rows, checker_str, client, worksheet, header_map,
-                  batch_size, progress_bar, status_text, metrics_containers):
-    """実際のバッチ処理を実行"""
+def _process_batch(target_rows, quality_checker, worksheet, header_map,
+                  batch_size, progress_bar, status_text, metrics_containers, checkers):
+    """実際のバッチ処理を実行（新しいQualityCheckerを使用）"""
     results_batch = []
     total_processed = 0
     total_success = 0
@@ -103,8 +130,13 @@ def _process_batch(target_rows, checker_str, client, worksheet, header_map,
             # 現在処理中のファイル表示
             current_file = _show_current_processing(filename)
             
-            # 品質チェックワークフロー実行
-            result_json = run_workflow(raw_transcript, checker_str, client)
+            # 会話が短すぎるかチェック
+            if _is_conversation_too_short(raw_transcript):
+                result_json = _create_no_conversation_result(quality_checker)
+                st.info(f"ℹ️ {filename}: 会話記録がほとんどないため、品質チェックをスキップしました。")
+            else:
+                # 品質チェック実行
+                result_json = _execute_quality_check(raw_transcript, quality_checker, checkers)
             
             if result_json:
                 results_batch.append((row_index, result_json))
@@ -132,8 +164,17 @@ def _process_batch(target_rows, checker_str, client, worksheet, header_map,
             )
             
         except Exception as e:
-            st.error(f"行 {row_index} の処理エラー: {str(e)}")
+            ErrorHandler.handle_error(e, f"行 {row_index} の処理", show_details=False)
             continue
+
+
+@safe_execute("品質チェック実行")
+def _execute_quality_check(raw_transcript: str, quality_checker: QualityChecker, checkers) -> Optional[str]:
+    """新しいQualityCheckerを使用して品質チェックを実行し、結果をJSON文字列で返す"""
+    result_dict = quality_checker.check(raw_transcript, checkers)
+    if result_dict:
+        return json.dumps(result_dict, ensure_ascii=False, indent=2)
+    return None
 
 
 def _show_current_processing(filename):
@@ -166,6 +207,7 @@ def _update_metrics(metrics_containers, processed, success, total):
     """, unsafe_allow_html=True)
 
 
+@safe_execute("スプレッドシート更新")
 def _update_spreadsheet_batch(worksheet, header_map, results_batch):
     """バッチ単位でスプレッドシートを更新"""
     batch_status = st.empty()
@@ -187,4 +229,5 @@ def _update_spreadsheet_batch(worksheet, header_map, results_batch):
         </div>
         """, unsafe_allow_html=True)
         time.sleep(2)
-        batch_status.empty() 
+        batch_status.empty()
+        raise 

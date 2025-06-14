@@ -1,227 +1,226 @@
-# 📞 テレアポ文字起こし・品質チェックシステム v2.0
+# TeleCheck Test - テレアポ品質チェックシステム
 
-AssemblyAI API による話者分離機能付きの文字起こしシステムです。
-テレアポの録音データを自動的に文字起こしし、話者を分離してテレアポ担当者の発言を特定します。
+## プロジェクト概要
 
-## 🌟 主な機能
+音声ファイルの文字起こしとテレアポ品質チェックを自動化するStreamlitアプリケーションです。
+AssemblyAIによる話者分離機能とOpenAI GPTによる品質分析を組み合わせています。
 
-### 🎤 話者分離文字起こし
-- **AssemblyAI API** による高精度な話者分離
-- **自動テレアポ担当者判定** - 発言内容から担当者を自動識別
-- **大容量ファイル対応** - 最大2GB（2,048MB）まで対応
-- **複数ファイル一括処理** - 同時に複数ファイルの処理が可能
+## 🎯 主な機能
 
-### 🔍 品質チェック
-- **OpenAI GPT-4o-mini** による文字起こし品質の自動チェック
-- **カスタム担当者設定** - 複数担当者の品質評価に対応
-- **バッチ処理** - 大量データの効率的な処理
+- **話者分離付き文字起こし**: AssemblyAI APIによる高精度な音声認識と話者識別
+- **自動品質チェック**: 29項目にわたるテレアポ品質の自動判定
+- **バッチ処理**: 複数ファイルの一括処理に対応
+- **Google Sheets連携**: 結果の自動保存と管理
+- **リアルタイム進捗表示**: 処理状況の可視化
 
-### 📊 データ管理
-- **Google Sheets連携** - 結果の自動保存・管理
-- **話者別集計** - テレアポ担当者の発言のみを抽出
-- **ファイル情報追跡** - サイズ、処理時間等の詳細記録
+## 🏗️ プロジェクト構造（リファクタリング版）
 
-## 🏗️ アーキテクチャ
-
-### ファイル構造
 ```
-src/
-├── config.py                 # 🔧 アプリケーション設定管理
-├── api/
-│   ├── assemblyai_client.py   # 🎤 AssemblyAI API（文字起こし・話者分離）
-│   ├── openai_client.py       # 🤖 OpenAI API（品質チェック専用）
-│   └── sheets_client.py       # 📊 Google Sheets API
-├── ui/
-│   ├── main_app.py           # 🖥️ メインアプリケーション
-│   ├── components.py         # 🧩 UIコンポーネント
-│   └── styles.py             # 🎨 スタイル定義
-└── utils/
-    ├── speaker_detection.py   # 🔍 テレアポ担当者自動判定
-    ├── quality_check.py       # ✅ 品質チェックロジック
-    └── batch_processor.py     # ⚡ バッチ処理エンジン
+telecheck-test/
+├── app.py                      # メインアプリケーション
+├── requirements.txt            # 依存パッケージ
+├── README.md                   # プロジェクト説明
+├── src/                        # ソースコード
+│   ├── config.py              # 設定管理
+│   ├── ui/                    # ユーザーインターフェース
+│   │   ├── main_app.py        # メインアプリロジック
+│   │   ├── components.py      # UI コンポーネント
+│   │   └── styles.py          # スタイル定義
+│   ├── api/                   # API クライアント
+│   │   ├── openai_client.py   # OpenAI API
+│   │   ├── assemblyai_client.py # AssemblyAI API
+│   │   └── sheets_client.py   # Google Sheets API
+│   ├── prompts/               # プロンプト管理（分割版）
+│   │   ├── __init__.py        # 統合インターフェース
+│   │   ├── transcription_prompts.py    # 文字起こし関連
+│   │   ├── basic_check_prompts.py      # 基本品質チェック
+│   │   ├── advanced_check_prompts.py   # 高度品質チェック
+│   │   └── system_prompts.py  # 旧版（移行案内）
+│   ├── quality_check/         # 品質チェックシステム（新版）
+│   │   ├── __init__.py        # 統合インターフェース
+│   │   ├── base.py            # 基底クラス群
+│   │   └── checks.py          # 具体的実装クラス
+│   ├── common/                # 共通機能
+│   │   ├── __init__.py        
+│   │   └── error_handler.py   # 統一エラーハンドリング
+│   └── utils/                 # ユーティリティ
+│       ├── batch_processor.py # バッチ処理（更新版）
+│       ├── quality_check.py   # 旧版（後方互換）
+│       └── speaker_detection.py # 話者検出
+└── secrets/                   # API キー（git ignored）
+    └── service_account.json
 ```
 
-### 技術スタック
-- **Frontend**: Streamlit
-- **音声処理**: AssemblyAI API
-- **AI分析**: OpenAI GPT-4o-mini
-- **データ保存**: Google Sheets API
-- **言語**: Python 3.9+
+## 🔧 リファクタリングの改善点
 
-## 🚀 セットアップ
+### 1. モジュール分割
+- **35KB の巨大プロンプトファイル** → 3つの専門ファイルに分割
+- **18KB の品質チェックファイル** → クラスベースの柔軟な構造
+- **責務の論理的分離**: プロンプト・チェック・エラー処理
 
-### 1. 環境準備
+### 2. 設計パターン導入
+- **抽象基底クラス**: 新チェック追加の容易性
+- **ワークフローマネージャー**: 処理の統一管理
+- **エラーハンドラー**: 統一されたエラー処理
+
+### 3. 後方互換性維持
+- 既存コードは警告付きで継続動作
+- 段階的移行をサポート
+- フォールバック機能完備
+
+## 📦 セットアップ
+
+### 1. 依存関係のインストール
 ```bash
-# リポジトリクローン
-git clone <repository-url>
-cd telecheck-system
-
-# 仮想環境作成・有効化
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 依存関係インストール
 pip install -r requirements.txt
 ```
 
-### 2. API キー設定
-
-#### ローカル環境
-`.env` ファイルを作成：
-```env
-# AssemblyAI API（話者分離文字起こし用）
-ASSEMBLYAI_API_KEY=your-assemblyai-api-key
-
-# OpenAI API（品質チェック用）
-OPENAI_API_KEY=your-openai-api-key
+### 2. 環境変数の設定
+```bash
+# Streamlit secrets または環境変数で設定
+OPENAI_API_KEY="your-openai-api-key"
+ASSEMBLYAI_API_KEY="your-assemblyai-api-key"
 ```
 
-#### Streamlit Cloud環境
-Secrets設定で以下のいずれかの形式で設定：
-
-**方式1: 階層化設定**
-```toml
-[assemblyai]
-api_key = "your-assemblyai-api-key"
-
-[openai]
-api_key = "your-openai-api-key"
-```
-
-**方式2: フラット設定**
-```toml
-ASSEMBLYAI_API_KEY = "your-assemblyai-api-key"
-OPENAI_API_KEY = "your-openai-api-key"
-```
-
-### 3. Google Sheets認証設定
-詳細は [CREDENTIALS_SETUP.md](CREDENTIALS_SETUP.md) を参照
+### 3. Google Sheets 認証
+1. Google Cloud Console でサービスアカウントを作成
+2. 認証JSONファイルを `secrets/service_account.json` に配置
+3. スプレッドシートをサービスアカウントと共有
 
 ### 4. アプリケーション起動
 ```bash
 streamlit run app.py
 ```
 
-## 🔧 設定・カスタマイズ
-
-### ファイルサイズ制限の変更
-`.streamlit/config.toml` で調整可能：
-```toml
-[server]
-maxUploadSize = 2048  # MB単位
-```
-
-### 話者判定ルールのカスタマイズ
-`src/utils/speaker_detection.py` で判定ロジックを調整：
-- キーワード重み
-- 発言量による判定
-- 最初話者ボーナス
-
-### アプリケーション設定
-`src/config.py` で各種設定を変更：
-- ファイルサイズ制限
-- 処理並行数
-- バッチサイズ
-
-## 📋 使用方法
+## 🚀 使用方法
 
 ### 話者分離文字起こし
-1. **音声ファイルアップロード** - mp3ファイルを選択
-2. **自動処理実行** - 話者分離と担当者判定を実行
-3. **結果確認** - 話者別発言数と判定結果を確認
-4. **Google Sheets保存** - フォーマット済み結果を自動保存
+1. 音声ファイル（MP3, WAV, M4A）をアップロード
+2. 担当者名リストを設定
+3. 「話者分離文字起こし開始」をクリック
+4. 結果をGoogle Sheetsに保存
 
 ### 品質チェック
-1. **担当者設定** - カンマ区切りで担当者名を入力
-2. **処理設定** - 最大処理行数を指定
-3. **バッチ実行** - Google Sheetsデータの品質チェック実行
+1. 担当者を選択
+2. 最大処理行数を設定
+3. 「品質チェック実行」をクリック
+4. 29項目の自動判定結果を確認
 
-## 🔍 ファイルサイズ対応
+## 🔍 品質チェック項目
 
-### サイズ制限
-- **最大ファイルサイズ**: 2GB（2,048MB）
-- **推奨ファイルサイズ**: 500MB以下
-- **複数ファイル**: 同時アップロード可能（推奨10ファイル以下）
+### 基本チェック（2項目）
+- 社名・担当者名の名乗り確認
+- ロングコール検出
 
-### パフォーマンス
-| ファイルサイズ | 処理時間目安 | 推奨事項 |
-|-------------|------------|----------|
-| ～100MB     | 1-3分      | 標準処理 |
-| 100-500MB   | 3-8分      | 推奨範囲 |
-| 500MB-1GB   | 8-15分     | 注意が必要 |
-| 1GB-2GB     | 15分以上    | 安定した環境必須 |
+### テレアポ対応（9項目）
+- アプローチ方法
+- 競合他社への言及
+- 運転中・電車内での対応
+- 断られた際の対応
+- 暴言・脅迫の有無
+- 情報漏洩チェック
+- 違法行為への関与
+- 通話対応マナー
+- 相手の呼び方
 
-## 🛠️ トラブルシューティング
+### 顧客反応（8項目）
+- 電話お断りの意思表示
+- しつこさへの苦情
+- 専用番号への誤電話
+- 口調への注意
+- 顧客の怒り
+- 暴言を受けた状況
+- 通報の言及
+- 営業全般のお断り
 
-### よくある問題
+### マナー・心構え（10項目）
+- 適切な敬語使用
+- ビジネス用語の正しい使用
+- 謝罪表現の適切性
+- 口調・態度の丁寧さ
+- 会話の成立度
+- 誠実な説明
+- その他問題行動
 
-#### 1. アップロードエラー
-- **原因**: ファイルサイズ制限超過
-- **解決**: `.streamlit/config.toml`の設定確認
+## 🛠️ 開発者向け情報
 
-#### 2. メモリエラー
-- **原因**: 大容量ファイルまたは同時処理数過多
-- **解決**: ファイル分割またはバッチサイズ削減
+### 新しいチェック項目を追加する方法
+```python
+from src.quality_check.base import QualityCheckBase
 
-#### 3. API接続エラー
-- **原因**: APIキー設定ミス
-- **解決**: 環境変数またはSecrets設定確認
-
-#### 4. 話者判定精度
-- **原因**: 音声品質またはキーワード設定
-- **解決**: `speaker_detection.py`の判定ルール調整
-
-### ログ・デバッグ
-- 処理状況はStreamlit画面でリアルタイム表示
-- エラー詳細は画面上に表示
-- 設定状況は起動時に自動チェック
-
-## 📈 バージョン履歴
-
-### v2.0.0（リファクタリング版）
-- 🎯 AssemblyAI専用化（Whisper API削除）
-- 🔧 設定管理統一化
-- 📁 ファイル構造最適化
-- 🚀 パフォーマンス向上
-- 💾 最大2GBファイル対応
-
-### v1.2.0
-- 話者分離機能追加
-- 複数API対応
-
-### v1.0.0
-- 基本文字起こし機能
-
-## 🤝 開発・貢献
-
-### 開発環境
-```bash
-# 開発依存関係インストール
-pip install -r requirements-dev.txt
-
-# コード品質チェック
-flake8 src/
-black src/
-
-# テスト実行
-pytest tests/
+class NewCheck(QualityCheckBase):
+    def get_check_name(self) -> str:
+        return "新しいチェック"
+    
+    def check(self, text_input: str, **kwargs) -> str:
+        # チェックロジックを実装
+        return "問題なし"
 ```
 
-### 貢献方法
-1. Forkしてfeatureブランチ作成
-2. 変更実装とテスト追加
-3. Pull Request作成
+### エラーハンドリングの使用
+```python
+from src.common.error_handler import safe_execute, ErrorHandler
+
+@safe_execute("処理名")
+def my_function():
+    # 処理内容
+    pass
+```
+
+## 📝 移行ガイド
+
+### 旧コードから新コードへの移行
+```python
+# 旧：
+from src.utils.quality_check import run_workflow
+result = run_workflow(text, checker_str, client)
+
+# 新：
+from src.quality_check import run_quality_check_workflow
+result = run_quality_check_workflow(text, checker_str, client)
+```
+
+### プロンプトの使用方法
+```python
+# 旧：
+from src.prompts.system_prompts import SYSTEM_PROMPTS
+
+# 新：
+from src.prompts import SYSTEM_PROMPTS  # 統合辞書
+# または
+from src.prompts.basic_check_prompts import BASIC_CHECK_PROMPTS
+```
+
+## 🎨 技術スタック
+
+- **フロントエンド**: Streamlit
+- **音声処理**: AssemblyAI API
+- **AI分析**: OpenAI GPT API
+- **データ保存**: Google Sheets API
+- **言語**: Python 3.8+
+
+## 📊 パフォーマンス
+
+- **処理速度**: ファイルサイズに依存（1MB ≈ 1分）
+- **バッチ処理**: 最大50件まで一括処理可能
+- **API制限**: 各サービスの制限に準拠
+- **メモリ使用量**: 音声ファイルサイズの約2-3倍
+
+## 🔐 セキュリティ
+
+- APIキーはStreamlit Secretsで管理
+- 音声ファイルは一時的にのみ保存
+- Google Sheetsは適切な権限設定が必要
+- 処理ログにセンシティブ情報は含まない
+
+## 🤝 貢献
+
+1. このリポジトリをフォーク
+2. 新しいブランチを作成（`git checkout -b feature/AmazingFeature`）
+3. 変更をコミット（`git commit -m 'Add some AmazingFeature'`）
+4. ブランチにプッシュ（`git push origin feature/AmazingFeature`）
+5. Pull Requestを作成
 
 ## 📄 ライセンス
 
-MIT License - 詳細は [LICENSE](LICENSE) を参照
-
-## 🆘 サポート
-
-- **技術的な質問**: GitHubのIssuesを使用
-- **バグ報告**: Issues テンプレートに従って報告
-- **機能要望**: Discussionsで提案
-
----
-
-**© 2024 テレアポ品質チェックシステム - Version 2.0.0**
+このプロジェクトはMITライセンスの下で公開されています。

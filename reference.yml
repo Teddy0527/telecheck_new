@@ -1,0 +1,651 @@
+app:
+  description: 文字起こししてくれます
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: 文字起こし2
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai:0.0.11@390c87cc0f17370a70d3b214cd71a8de81fe9d6b52e6a38287acde034138b672
+kind: app
+version: 0.3.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 17448518393710-source-1744962866683-target
+      selected: false
+      source: '17448518393710'
+      sourceHandle: source
+      target: '1744962866683'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 17448491564580-source-17448518393710-target
+      selected: false
+      source: '17448491564580'
+      sourceHandle: source
+      target: '17448518393710'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1744848615450-source-17448518393710-target
+      selected: false
+      source: '1744848615450'
+      sourceHandle: source
+      target: '17448518393710'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1744850847408-source-17448518393710-target
+      selected: false
+      source: '1744850847408'
+      sourceHandle: source
+      target: '17448518393710'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1744851898805-source-17448518393710-target
+      selected: false
+      source: '1744851898805'
+      sourceHandle: source
+      target: '17448518393710'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1744962866683-source-1745210163705-target
+      selected: false
+      source: '1744962866683'
+      sourceHandle: source
+      target: '1745210163705'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1745375041416-source-17448518393710-target
+      selected: false
+      source: '1745375041416'
+      sourceHandle: source
+      target: '17448518393710'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1741315141970-source-17448491564580-target
+      source: '1741315141970'
+      sourceHandle: source
+      target: '17448491564580'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1741315141970-source-1744848615450-target
+      source: '1741315141970'
+      sourceHandle: source
+      target: '1744848615450'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1741315141970-source-1745375041416-target
+      source: '1741315141970'
+      sourceHandle: source
+      target: '1745375041416'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1741315141970-source-1744850847408-target
+      source: '1741315141970'
+      sourceHandle: source
+      target: '1744850847408'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1741315141970-source-1744851898805-target
+      source: '1741315141970'
+      sourceHandle: source
+      target: '1744851898805'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: true
+        title: 開始
+        type: start
+        variables:
+        - label: input
+          max_length: 4000
+          options: []
+          required: false
+          type: paragraph
+          variable: input
+      height: 90
+      id: '1741315141970'
+      position:
+        x: -65.44329438492028
+        y: 428.48598504674106
+      positionAbsolute:
+        x: -65.44329438492028
+        y: 428.48598504674106
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-4o-mini
+          provider: langgenius/openai/openai
+        prompt_template:
+        - id: c492ef57-daef-4774-8012-a6708725e9e2
+          role: system
+          text: 'あなたは「SFIDA X（スフィーダクロス）」のテレアポチェック（テレアポに問題がないかを判断する業務）を行うプロフェッショナルです。
+
+            以下に示す会話記録と10個のチェックルールに基づいて、テレアポが問題なく実施されているかを判定してください。
+
+            agent がテレアポを行っている会社を示し、customerがお客様を示しています。
+
+            問題があった場合は「問題あり」とし、具体的に何が問題だったかを「報告」欄に書いてください。問題がなければ「問題なし」としてください。'
+        - id: 315be300-dd8b-4fd0-9733-2d2ab3537f1b
+          role: user
+          text: "以下に示す会話記録と9個のチェックルールに基づいて、テレアポが問題なく実施されているかを判定してください。\n\n#チェックすべき9個のルール\n\
+            \n1. アプローチで販売店名、ソフト名の先出し\nお客様より先に販売店名やソフト名を出さない。\n「○○の件なんですけど」などで誤認を招く表現はNG。\n\
+            販売店名やソフト名を出した場合は、相手に誤解がないよう説明しているか。\n2. 同業他社の悪口等\n他社を不当にけなす・悪口を言う、根拠なくお客様の不安をあおる表現は禁止。\n\
+            客観的事実に基づかない不当比較はNG。\n3. 運転中や電車内でも無理やり続ける\n相手が「運転中」「電車内」と言ったらトークを継続せず、切り上げ・再連絡の時間確認などを優先する。\n\
+            ハンズフリーでも「続けていい」と相手から明示がない限り、強引に進めない。\n4. 2回断られても食い下がる\n相手が忙しい等で2回以上断っているのに会話を無理やり続けない。\n\
+            「あと1個だけいいですか」を2回以上繰り返していないか。\n5. 暴言・悪口・脅迫・逆上\nお客様への攻撃的・侮辱的表現（「バカ」「ふざけんな」等）\n\
+            脅迫（「断ったら悪評を書き込む」等）\n逆上（「こちらからお断りします」等の恫喝）\nこれらが含まれていれば問題あり。\n6. 情報漏洩\n\
+            別のお客様の個人情報・当社の未公表情報などを勝手に伝えていないか。\n営業秘密を軽々しく話すなども禁止。\n7. 共犯（教唆・幇助）\nお客様の犯罪行為や違法行為に加担・手助けする、またはそそのかすような発言をしていないか。\n\
+            8. 通話対応（無言電話／ガチャ切り）\n無言電話: 相手が応答しているにもかかわらず、担当者が一切話さない／返答しないまま終わる。\nガチャ切り:\
+            \ 相手がまだ話している途中なのに一方的に切る。\nいずれも相手に対して失礼な終わり方をしていないか。\n9. 呼び方（決裁者 or 事務員）\n\
+            社長・代表・オーナーにつながったら「決裁者」、事務員や従業員の場合は「事務員」として正しく把握しているか。\nたとえば、事務員から決裁者に変わったら「決裁者」に呼称を切り替えているか。\n\
+            \n#アウトプット形式\n下記のテンプレートを用い、各ルールごとに判定を行ってください。\n「問題あり」または「問題なし」を必ず明記し、問題がある場合のみ「報告」欄に理由や該当発言を記述してください。\n\
+            下記以外のものは出力しないでください。\n\n\n▪️アプローチで販売店名、ソフト名の先出し\n判定 : 問題なし or 問題あり\n報告\
+            \ : \n\n▪️同業他社の悪口等\n判定 : 問題なし or 問題あり\n報告 : \n\n▪️運転中や電車内でも無理やり続ける\n判定\
+            \ : 問題なし or 問題あり\n報告 : \n\n▪️2回断られても食い下がる\n判定 : 問題なし or 問題あり\n報告 : \n\n\
+            ▪️暴言・悪口・脅迫・逆上\n判定 : 問題なし or 問題あり\n報告 : \n\n▪️情報漏洩\n判定 : 問題なし or 問題あり\n\
+            報告 : \n\n▪️共犯（教唆・幇助）\n判定 : 問題なし or 問題あり\n報告 : \n\n▪️通話対応（無言電話／ガチャ切り）\n\
+            判定 : 問題なし or 問題あり\n報告 : \n\n▪️呼び方\n判定 : 問題なし or 問題あり\n報告 : \n\n\n会話記録\n\
+            {{#17448484557810.text#}}\n"
+        selected: false
+        title: テレアポ担当者の対応
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 90
+      id: '1744848615450'
+      position:
+        x: 631.591873379281
+        y: 300.36468711610263
+      positionAbsolute:
+        x: 631.591873379281
+        y: 300.36468711610263
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ■音声ファイル再生直後（Q列～S列、F列、J列）
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-4o-mini
+          provider: langgenius/openai/openai
+        prompt_template:
+        - id: 1df52211-6077-4f62-9940-36f01012bc5b
+          role: system
+          text: 'あなたは「SFIDA X（スフィーダクロス）」のテレアポチェックを行うプロフェッショナルです。
+
+            以下に示す会話記録とチェックすべきルールに基づいて、テレアポが問題なく実施されているかを判定してください。
+
+            agent がテレアポを行っている会社を示し、customerがお客様を示しています。
+
+            問題があった場合は「問題あり」とし、具体的に何が問題だったかを「報告」欄に書いてください。問題がなければ「問題なし」としてください。'
+        - id: fdf21497-1d06-46fe-b457-1a753a542c38
+          role: user
+          text: "チェックすべき内容\n\n#社名と担当者名を名乗っているか\n社名：「SFIDA X」または「スフィーダクロス」\n担当者名：以下のいずれか\n\
+            （\n工藤\n前川\n猪俣\n田本\n立川\n濱田\n  ）\n両方（社名・担当者名）が名乗られていない場合は「問題あり」。名字だけでも問題ありません。\n\
+            \n#アウトプット形式\n以下のフォーマットに従って回答してください。セミコロン以降を埋めてください。\n\n\n1. テレアポ担当者名(④)\
+            \ : \n2. 社名や担当者名を名乗らない : \n判定: 問題あり or 問題なし\n「報告」欄には、問題があった場合のみ詳細を記述してください。\n\
+            問題がない場合は「報告 : なし」としてください。\n\n\n#文字起こしされた会話記録\n{{#17448484557810.text#}}\n"
+        selected: false
+        title: 社名・担当者名 判定 (1)
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 134
+      id: '17448491564580'
+      position:
+        x: 631.591873379281
+        y: 104.57705660565796
+      positionAbsolute:
+        x: 631.591873379281
+        y: 104.57705660565796
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-4o-mini
+          provider: langgenius/openai/openai
+        prompt_template:
+        - id: 451355ac-9a23-4cf2-a741-95d9379b78cd
+          role: system
+          text: '【複数ルール判定用プロンプト（8個：お客様の反応）】
+
+            あなたは「SFIDA X（スフィーダクロス）」のテレアポチェックを行うプロフェッショナルです。
+
+
+            各ルールで「問題あり」または「問題なし」を必ず明記し、問題がある場合のみ「報告」欄に理由や該当発言を記述してください。
+
+            agent がテレアポを行っている会社を示し、customerがお客様を示しています。
+
+            報告欄には、具体的なやり取りや電話相手のセリフなど、を簡潔に示してください。'
+        - id: fc7d8c3d-53ea-4bc5-95cc-e5e04e1753e6
+          role: user
+          text: "\n以下に示す会話記録と8個のチェックルールに基づいて、テレアポが問題なく実施されているか、お客様の反応に問題がなかったかを判定してください。\n\
+            チェックすべき8個のルール\n\n1. 当社の電話お断り\n相手が「もう電話しないでほしい」などの趣旨を伝えている場合は問題あり。\n「電話してほしくない理由」が分かるよう、具体的なセリフも記録する。\n\
+            2. しつこい・何度も電話がある\n相手が「しつこい」「何度も電話が来ている」と不満を表明している場合は問題あり。\nどの程度しつこかったかが分かる具体的セリフを記録する。\n\
+            3. お客様専用電話番号と言われる\n相手が「この番号は営業電話を受け付けていない」「これはお客様専用番号」など、営業電話そのものを想定していない番号であると明言している場合は問題あり。\n\
+            4. 口調を注意された\n相手が「あなたの口調が失礼だ」「言い方を気を付けてほしい」など、当社担当者の話し方・態度を指摘している場合は問題あり。\n\
+            5. 怒らせた\n相手が明らかに怒っている（声を荒らげる、強い口調で不満を述べる等）場合は問題あり。\n立腹に至った経緯・理由を具体的に把握する。\n\
+            6. 暴言を受けた\n相手が「ふざけんな」「バカ」などの暴言を放った場合は問題あり。\n暴言に至った経緯や理由を把握し、記録する。\n7.\
+            \ 通報する\n相手が「警察や消費者センターへ通報する」と明言している場合は問題あり。\nなぜ通報に至ったかを把握し、具体的に記録する。\n\
+            8. 営業お断り\n提案内容や商品に関わらず、そもそも「営業電話自体を断っている」場合は問題あり。\n単に提案を断っただけ（商品内容に対するNo）であれば問題なし。\n\
+            \n\n\n#アウトプット形式\n下記のテンプレートを使い、各ルールごとに判定を行ってください。\n「問題あり」または「問題なし」を必ず明記し、問題がある場合のみ「報告」欄に詳細を書いてください。\n\
+            \n▪️当社の電話お断り\n判定 : 問題なし or 問題あり\n報告 : \n\n▪️しつこい・何度も電話がある\n判定 : 問題なし or\
+            \ 問題あり\n報告 : \n\n▪️お客様専用電話番号と言われる\n判定 : 問題なし or 問題あり\n報告 : \n\n▪️口調を注意された\n\
+            判定 : 問題なし or 問題あり\n報告 : \n\n▪️怒らせた\n判定 : 問題なし or 問題あり\n報告 : \n\n▪️暴言を受けた\n\
+            判定 : 問題なし or 問題あり\n報告 : \n\n▪️通報する\n判定 : 問題なし or 問題あり\n報告 : \n\n▪️営業お断り\n\
+            判定 : 問題なし or 問題あり\n報告 : \n\n\n会話記録\n{{#17448484557810.text#}}\n"
+        selected: false
+        title: お客様の反応
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 90
+      id: '1744850847408'
+      position:
+        x: 638
+        y: 679
+      positionAbsolute:
+        x: 638
+        y: 679
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: "\ndef main(arg1: str, arg2: str, arg3:str, arg4:str,arg5:str) -> dict:\n\
+          \    return {\n        \"result\": arg1 + \"\\n\\n\" +arg2+ \"\\n\\n\" +arg3+\
+          \ \"\\n\\n\" +arg4+ \"\\n\\n\" +arg5,\n    }\n"
+        code_language: python3
+        desc: ''
+        outputs:
+          result:
+            children: null
+            type: string
+        selected: false
+        title: コード実行 2 (1)
+        type: code
+        variables:
+        - value_selector:
+          - '17448491564580'
+          - text
+          variable: arg1
+        - value_selector:
+          - '1744848615450'
+          - text
+          variable: arg2
+        - value_selector:
+          - '1745375041416'
+          - text
+          variable: arg3
+        - value_selector:
+          - '1744850847408'
+          - text
+          variable: arg4
+        - value_selector:
+          - '1744851898805'
+          - text
+          variable: arg5
+      height: 54
+      id: '17448518393710'
+      position:
+        x: 943.2816253241438
+        y: 549
+      positionAbsolute:
+        x: 943.2816253241438
+        y: 549
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-4o-mini
+          provider: langgenius/openai/openai
+        prompt_template:
+        - id: 50a2d164-ef2a-48cd-9b4f-cf34838e11d8
+          role: system
+          text: 'あなたは「SFIDA X（スフィーダクロス）」のテレアポチェックを行うプロフェッショナルです。
+
+            以下に示す会話記録と9個のチェックルールに基づいて、テレアポが問題なく実施されているかを判定してください。
+
+            それぞれのルールについて「問題なし」または「問題あり」を判定し、問題がある場合のみ「報告」欄に理由や該当発言を記載してください。
+
+            「報告」欄に記載する情報は、どんな発言が何回あったか、どのような経緯か等）を簡潔にまとめてください。'
+        - id: a0157ab1-3586-45b0-8177-3eb72e1508e3
+          role: user
+          text: "以下に示す会話記録と9個のチェックルールに基づいて、テレアポが問題なく実施されているかを判定してください。\n\n#チェックすべき9個のルール\n\
+            1. 事務員に対して代表者のことを「社長」「オーナー」「代表」と呼ぶ\n原則、「代表者様はいらっしゃいますか」などビジネス上の丁寧表現を使う。\n\
+            「〇〇代表」や決裁者本人への呼びかけ「代表、」は問題なし。\n担当者が具体的にどう呼んだかを確認する。\n2. 一人称が「僕」「自分」「俺」\n\
+            一人称は「私」で統一。\n「僕」「俺」「自分」が1回でも出たら問題あり。\n何回出たかを記録。\n3. 「弊社」のことを「うち」「僕ら」と言う\n\
+            自社を指す場合は「弊社」で統一。\n「うち」「僕ら」「わたしたち」など他の言い回しが出たら問題あり。\n何回出たかを記録。\n4. 謝罪が「すみません」「ごめんなさい」\n\
+            適切なビジネス表現かどうか、文脈も含めて確認。\n「申し訳ございません」「大変失礼いたしました」などが望ましいが、状況次第で「すみません」「ごめんなさい」が失礼になるケースや、軽い言い方に聞こえる場合がある。\n\
+            必要に応じて問題ありと判断し、理由を示す。\n5. 口調や態度が失礼\nタメ口、馴れ馴れしい態度、逆ギレ、失礼な相槌などが含まれる場合は問題あり。\n\
+            「なるほど。」は問題あり（「なるほどですね」は問題なし）。\n「ぶっちゃけ」「めっちゃ」は許容。\nどの表現が何回あったか、簡潔に示す。\n\
+            6. 会話が成り立っていない\n相手の質問に答えていない、相手の発言を無視している等で会話が噛み合わない場合は問題あり。\n用件や金額について具体的回答をしていなくても、それ自体は問題にならないが、質問をはぐらかし続けるなど明らかに会話が成立していない場合は要注意。\n\
+            7. 残債の「下取り」「買い取り」トーク（誤認を招く表現）\n「残りの費用を弊社が持つ」「下取りする」「買い取りする」など誤解を与える発言は問題あり。\n\
+            正しくは「条件次第では処理を代行する」などの表現を使う。\n8. 嘘・真偽不明の発言\n「無料で制作できる」「ウイルスに感染している」「閲覧数が3倍になる」など、客観的根拠なく断定して不安をあおる・誤認をさせる発言は禁止。\n\
+            既取引がないのに「以前にお電話しました」と嘘をつくのもNG。\n社名・名前を伏せる、偽名を使うなども問題あり。\n9. その他問題\n上記のいずれにも該当しないが、明らかに問題となる言動があった場合に報告。\n\
+            \n\n#アウトプット形式\n以下のテンプレートを使用し、各ルールごとに判定を行ってください。\n問題ありの場合のみ「報告 :」欄に内容（該当セリフ・回数・経緯など）を記載し、問題なしの場合は「問題なし」と明記してください。\n\
+            \n▪️事務員に対して代表者のことを「社長」「オーナー」「代表」\n判定 : 問題なし or 問題あり\n報告 : \n\n▪️ 一人称が「僕」「自分」「俺」\n\
+            判定 : 問題なし or 問題あり\n報告 : \n\n▪️「弊社」のことを「うち」「僕ら」と言う\n判定 : 問題なし or 問題あり\n\
+            報告 : \n\n▪️謝罪が「すみません」「ごめんなさい」\n判定 : 問題なし or 問題あり\n報告 : \n\n▪️口調や態度が失礼\n\
+            判定 : 問題なし or 問題あり\n報告 : \n\n▪️会話が成り立っていない\n判定 : 問題なし or 問題あり\n報告 : \n\n\
+            ▪️残債の「下取り」「買い取り」トーク\n判定 : 問題なし or 問題あり\n報告 : \n\n▪️嘘・真偽不明\n判定 : 問題なし or\
+            \ 問題あり\n報告 : \n\n▪️その他問題\n判定 : 問題なし or 問題あり\n報告 : \n\n会話記録\n{{#17448484557810.text#}}"
+        selected: false
+        title: 心構え
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 90
+      id: '1744851898805'
+      position:
+        x: 638
+        y: 809
+      positionAbsolute:
+        x: 638
+        y: 809
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-4o-mini
+          provider: langgenius/openai/openai
+        prompt_template:
+        - id: 82dceef0-4568-4b8e-989b-ca1c6a63ea60
+          role: system
+          text: あなたはSFIDA X社のテレアポ音声記録を判定し、スプレッドシートにぴったり収まるJSONを出力するプロフェッショナルです。
+        - id: bc9521ca-32a0-4f98-8b5a-321b8053fe73
+          role: user
+          text: "\n以下の「インプット」を解析して、\n\n1. 「テレアポ担当者名」は A 列、\n2. ルールごとの「判定」は B～列以降に列名（日本語タイトル）をそのままキー名に、\n\
+            3. すべての「報告」をまとめて箇条書きの配列（JSONの配列）として、最後のキー `\"報告まとめ\"` に格納\n\n報告まとめに関しては、重要度を判断し、最大5つのポイントに絞ってください。\n\
+            \n\nする形式で、**純粋なJSONオブジェクト**だけを返してください。  \n他のテキストや説明は一切不要です。\n\n───  \n\
+            ### インプット（例・指定順）\n\n▪️社名・担当者判定  \nテレアポ担当者名(④) : 渡辺  \n社名や担当者名を名乗らない（③）\
+            \ : 問題あり  \n報告 : 社名「SFIDA X」または「スフィーダクロス」を名乗っていないため。  \n\n▪️社名や担当者名を名乗らない\
+            \  \nテレアポ担当者名(④) : 渡辺  \nルール1の判定 : 問題なし  \n報告 :  \n\n▪️アプローチで販売店名、ソフト名の先出し\
+            \  \nルール2の判定 : 問題なし  \n報告 :  \n\n▪️同業他社の悪口等  \nルール3の判定 : 問題なし  \n報告 :\
+            \  \n\n▪️運転中や電車内でも無理やり続ける  \nルール4の判定 : 問題なし  \n報告 :  \n\n▪️2回断られても食い下がる\
+            \  \nルール5の判定 : 問題なし  \n報告 :  \n\n▪️暴言・悪口・脅迫・逆上  \nルール6の判定 : 問題なし  \n報告\
+            \ :  \n\n▪️情報漏洩  \nルール7の判定 : 問題なし  \n報告 :  \n\n▪️共犯（教唆・幇助）  \nルール8の判定\
+            \ : 問題なし  \n報告 :  \n\n▪️通話対応（無言電話／ガチャ切り）  \nルール9の判定 : 問題なし  \n報告 :  \n\
+            \n▪️呼び方  \nルール10の判定 : 問題なし  \n報告 :  \n\n▪️総合判定  \n総合判定 : 問題なし  \n報告 :\
+            \ 全てのルールにおいて問題は確認されませんでした。  \n\n▪️当社の電話お断り  \n判定 : 問題なし  \n報告 :  \n\n\
+            ▪️しつこい・何度も電話がある  \n判定 : 問題なし  \n報告 :  \n\n▪️お客様専用電話番号と言われる  \n判定 : 問題なし\
+            \  \n報告 :  \n\n▪️口調を注意された  \n判定 : 問題なし  \n報告 :  \n\n▪️怒らせた  \n判定 : 問題なし\
+            \  \n報告 :  \n\n▪️暴言を受けた  \n判定 : 問題なし  \n報告 :  \n\n▪️通報する  \n判定 : 問題なし\
+            \  \n報告 :  \n\n▪️営業お断り  \n判定 : 問題なし  \n報告 :  \n\n▪️事務員に対して代表者のことを「社長」「オーナー」「代表」\
+            \  \n判定 : 問題なし  \n報告 :  \n\n▪️一人称が「僕」「自分」「俺」  \n判定 : 問題あり  \n報告 : 「僕」が1回使用されている。\
+            \  \n\n▪️「弊社」のことを「うち」「僕ら」と言う  \n判定 : 問題なし  \n報告 :  \n\n▪️謝罪が「すみません」「ごめんなさい」\
+            \  \n判定 : 問題あり  \n報告 : 「すみません」が5回使用されており、ビジネス表現としては軽い印象を与える可能性がある。  \n\
+            \n▪️口調や態度が失礼  \n判定 : 問題なし  \n報告 :  \n\n▪️会話が成り立っていない  \n判定 : 問題なし  \n\
+            報告 :  \n\n▪️残債の「下取り」「買い取り」トーク  \n判定 : 問題なし  \n報告 :  \n\n▪️嘘・真偽不明  \n判定\
+            \ : 問題なし  \n報告 :  \n\n▪️その他問題  \n判定 : 問題なし  \n報告 :  \n\n───\n\n**【期待するJSON出力例】**\n\
+            \n```json\n{\n  \"テレアポ担当者名\": \"渡辺\",\n  \"社名・担当者判定\": \"問題あり\",\n  \"\
+            社名や担当者名を名乗らない\": \"問題なし\",\n  \"アプローチで販売店名、ソフト名の先出し\": \"問題なし\",\n  \"\
+            同業他社の悪口等\": \"問題なし\",\n  \"運転中や電車内でも無理やり続ける\": \"問題なし\",\n  \"2回断られても食い下がる\"\
+            : \"問題なし\",\n  \"暴言・悪口・脅迫・逆上\": \"問題なし\",\n  \"情報漏洩\": \"問題なし\",\n  \"\
+            共犯（教唆・幇助）\": \"問題なし\",\n  \"通話対応（無言電話／ガチャ切り）\": \"問題なし\",\n  \"呼び方\":\
+            \ \"問題なし\",\n  \"総合判定\": \"問題なし\",\n  \"当社の電話お断り\": \"問題なし\",\n  \"しつこい・何度も電話がある\"\
+            : \"問題なし\",\n  \"お客様専用電話番号と言われる\": \"問題なし\",\n  \"口調を注意された\": \"問題なし\"\
+            ,\n  \"怒らせた\": \"問題なし\",\n  \"暴言を受けた\": \"問題なし\",\n  \"通報する\": \"問題なし\"\
+            ,\n  \"営業お断り\": \"問題なし\",\n  \"事務員に対して代表者のことを「社長」「オーナー」「代表」\": \"問題なし\"\
+            ,\n  \"一人称が「僕」「自分」「俺」\": \"問題あり\",\n  \"「弊社」のことを「うち」「僕ら」と言う\": \"問題なし\"\
+            ,\n  \"謝罪が「すみません」「ごめんなさい」\": \"問題あり\",\n  \"口調や態度が失礼\": \"問題なし\",\n  \"\
+            会話が成り立っていない\": \"問題なし\",\n  \"残債の「下取り」「買い取り」トーク\": \"問題なし\",\n  \"嘘・真偽不明\"\
+            : \"問題なし\",\n  \"その他問題\": \"問題なし\",\n  \"報告まとめ\": [\n    \"社名「SFIDA X」または「スフィーダクロス」を名乗っていないため。\"\
+            ,\n    \"「僕」が1回使用されている。\",\n    \"「すみません」が5回使用されており、ビジネス表現としては軽い印象を与える可能性がある。\"\
+            \n  ]\n}\n#インプット内容\n{{#17448518393710.result#}}"
+        selected: false
+        title: LLM 9
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 90
+      id: '1744962866683'
+      position:
+        x: 1246
+        y: 549
+      positionAbsolute:
+        x: 1246
+        y: 549
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - '1744962866683'
+          - text
+          variable: text
+        selected: false
+        title: 終了 2
+        type: end
+      height: 90
+      id: '1745210163705'
+      position:
+        x: 1551.5704662150715
+        y: 549
+      positionAbsolute:
+        x: 1551.5704662150715
+        y: 549
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-4o-mini
+          provider: langgenius/openai/openai
+        prompt_template:
+        - id: bc2dfffd-4db7-4f0a-85cc-48ab3d01e6c5
+          role: system
+          text: 'あなたは「SFIDA X（スフィーダクロス）」のテレアポチェック（テレアポに問題がないかを判断する業務）を行うプロフェッショナルです。
+
+            以下に示す会話記録とチェックルールに基づいて、テレアポが問題なく実施されているかを判定してください。
+
+            agent がテレアポを行っている会社を示し、customerがお客様を示しています。
+
+            問題があった場合は「問題あり」とし、具体的に何が問題だったかを「報告」欄に書いてください。問題がなければ「問題なし」としてください。'
+        - id: b130ae30-72e0-4ab7-a9ac-b304663937d4
+          role: user
+          text: "\n以下に示す会話記録のチェックルールに基づいて、テレアポが問題なく実施されているか、お客様の反応に問題がなかったかを判定してください。\n\
+            #チェックルール\n1. ロングコール\n\n会話記録に「電話が鳴る」という記述がある場合、この回数をカウントしてください。記述がない場合は、「問題なし」で良いです。\n\
+            これは電話のコールを表しています。「電話が鳴る」が7回以上繰り返された場合は、問題ありです。ロングコールに当たります。\n\n#アウトプット形式\n\
+            下記のテンプレートを使い、各ルールごとに判定を行ってください。\n「問題あり」または「問題なし」を必ず明記し、問題がある場合のみ「報告」欄に詳細を書いてください。\n\
+            \n▪️ロングコール\n判定 : 問題なし or 問題あり\n報告 : \n\n#会話記録\n{{#17448484557810.text#}}"
+        selected: false
+        title: ロングコール
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 90
+      id: '1745375041416'
+      position:
+        x: 631.591873379281
+        y: 521.8317485088555
+      positionAbsolute:
+        x: 631.591873379281
+        y: 521.8317485088555
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: 669.7060000577137
+      y: 175.33010560397005
+      zoom: 0.4905641191201385

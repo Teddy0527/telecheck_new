@@ -59,19 +59,23 @@ def init_openai_client():
         st.stop()
 
 
-def chat_with_retry(client, system_prompt, user_prompt, temperature=0.0, model="gpt-4o-mini", max_retries=3):
+def chat_with_retry(client, system_prompt, user_prompt, temperature=0.0, model="gpt-4o-mini", max_retries=3, response_format=None):
     """OpenAI Chat APIを使用してプロンプトの応答を取得（リトライ機能付き）"""
     retry_count = 0
     while retry_count < max_retries:
         try:
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
+            params = {
+                "model": model,
+                "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                temperature=temperature
-            )
+                "temperature": temperature
+            }
+            if response_format:
+                params["response_format"] = response_format
+
+            response = client.chat.completions.create(**params)
             return response.choices[0].message.content
         except Exception as e:
             retry_count += 1

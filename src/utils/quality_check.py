@@ -1,11 +1,28 @@
 """
-品質チェックのコアワークフローを実装するモジュール（AssemblyAI話者分離対応版）
+品質チェック機能（リファクタリング移行版）
+
+⚠️ このファイルは廃止予定です。
+新しいコードでは `src.quality_check` モジュールを使用してください。
+
+移行ガイド:
+- `run_workflow` → `src.quality_check.run_quality_check_workflow`
+- `node_replace` → `src.quality_check.fix_transcription`
+- 個別チェック → `src.quality_check` の各チェッククラス
 """
 
+import warnings
 import streamlit as st
 import json
 from src.prompts.system_prompts import SYSTEM_PROMPTS
 from src.api.openai_client import chat_with_retry
+from src.quality_check.prompts import SYSTEM_PROMPT, SPREADSHEET_KEYS, extract_checker_name
+
+# 廃止警告を表示
+warnings.warn(
+    "⚠️ src.utils.quality_check は廃止予定です。新しい src.quality_check モジュールを使用してください。",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 def node_replace(input_text, checker_str, client):
     """固有名詞を置換するノード（Dify互換）"""
@@ -51,10 +68,10 @@ def node_to_json(concatenated, client):
     """結果をJSONに変換するノード（Dify互換）"""
     prompt = SYSTEM_PROMPTS['to_json']
     full_prompt = f"{prompt}\n\n#インプット内容\n{concatenated}"
-    return chat_with_retry(client, full_prompt, "", expect_json=True)
+    return chat_with_retry(client, full_prompt, "")
 
 def run_workflow(raw_transcript, checker_str, client):
-    """品質チェックのワークフローを実行（AssemblyAI話者分離対応版 - 8ステップ）"""
+    """品質チェックのワークフローを実行（AssemblyAI話者分離対応版 - 7ステップ）"""
     try:
         workflow_progress = st.progress(0)
         status_text = st.empty()
@@ -64,58 +81,52 @@ def run_workflow(raw_transcript, checker_str, client):
             st.warning("入力テキストが空です")
             return None
         
-        # 1. 固有名詞の置換
-        status_text.markdown("**ステップ 1/8**: 固有名詞の置換")
-        text_fixed = node_replace(raw_transcript, checker_str, client)
-        if not text_fixed or not text_fixed.strip():
-            st.warning("ステップ1: 固有名詞の置換でエラーが発生しました")
-            return None
-        workflow_progress.progress(1/8)
-
-        # 注意: AssemblyAIで既に話者分離済みのため、LLMによる話者分離ステップは削除
-
-        # 2. 社名・担当者名チェック（話者分離済みテキストを使用）
-        status_text.markdown("**ステップ 2/8**: 社名・担当者名チェック")
+        # 注意: 固有名詞の置換は既にスプレッドシート保存時に実行済み
+        # 入力テキストをそのまま使用（text_fixed = raw_transcript）
+        text_fixed = raw_transcript
+        
+        # 1. 社名・担当者名チェック
+        status_text.markdown("**ステップ 1/7**: 社名・担当者名チェック")
         company_name_check = node_company_name_check(text_fixed, checker_str, client)
         if not company_name_check:
             company_name_check = "チェック失敗"
-        workflow_progress.progress(2/8)
+        workflow_progress.progress(1/7)
         
-        # 3. テレアポ担当者対応チェック
-        status_text.markdown("**ステップ 3/8**: テレアポ担当者対応チェック")
+        # 2. テレアポ担当者対応チェック
+        status_text.markdown("**ステップ 2/7**: テレアポ担当者対応チェック")
         teleapo_response_check = node_teleapo_response_check(text_fixed, client)
         if not teleapo_response_check:
             teleapo_response_check = "チェック失敗"
-        workflow_progress.progress(3/8)
+        workflow_progress.progress(2/7)
             
-        # 4. ロングコールチェック
-        status_text.markdown("**ステップ 4/8**: ロングコールチェック")
+        # 3. ロングコールチェック
+        status_text.markdown("**ステップ 3/7**: ロングコールチェック")
         longcall_check = node_longcall_check(text_fixed, client)
         if not longcall_check:
             longcall_check = "チェック失敗"
-        workflow_progress.progress(4/8)
+        workflow_progress.progress(3/7)
             
-        # 5. お客様反応チェック
-        status_text.markdown("**ステップ 5/8**: お客様反応チェック")
+        # 4. お客様反応チェック
+        status_text.markdown("**ステップ 4/7**: お客様反応チェック")
         customer_reaction_check = node_customer_reaction_check(text_fixed, client)
         if not customer_reaction_check:
             customer_reaction_check = "チェック失敗"
-        workflow_progress.progress(5/8)
+        workflow_progress.progress(4/7)
             
-        # 6. 心構え・マナーチェック
-        status_text.markdown("**ステップ 6/8**: 心構え・マナーチェック")
+        # 5. 心構え・マナーチェック
+        status_text.markdown("**ステップ 5/7**: 心構え・マナーチェック")
         manner_check = node_manner_check(text_fixed, client)
         if not manner_check:
             manner_check = "チェック失敗"
-        workflow_progress.progress(6/8)
+        workflow_progress.progress(5/7)
 
-        # 7. 結果の連結
-        status_text.markdown("**ステップ 7/8**: 結果の連結")
+        # 6. 結果の連結
+        status_text.markdown("**ステップ 6/7**: 結果の連結")
         concatenated = node_concat(company_name_check, teleapo_response_check, longcall_check, customer_reaction_check, manner_check)
-        workflow_progress.progress(7/8)
+        workflow_progress.progress(6/7)
 
-        # 8. JSONに変換
-        status_text.markdown("**ステップ 8/8**: JSON形式に変換")
+        # 7. JSONに変換
+        status_text.markdown("**ステップ 7/7**: JSON形式に変換")
         result_json = node_to_json(concatenated, client)
         
         # JSON変換結果の検証
@@ -292,3 +303,125 @@ def create_fallback_json(company_name_check, teleapo_response_check, longcall_ch
     }
     
     return result 
+
+def run_unified_workflow(raw_transcript, checker_str, client):
+    """統合型品質チェックワークフロー（1回のAPI呼び出しで全29項目をチェック）"""
+    try:
+        workflow_progress = st.progress(0)
+        status_text = st.empty()
+        
+        # 入力検証
+        if not raw_transcript or not raw_transcript.strip():
+            st.warning("入力テキストが空です")
+            return None
+        
+        status_text.markdown("**統合品質チェック実行中**: 全29項目を一括処理...")
+        workflow_progress.progress(0.5)
+        
+        # 統合型プロンプトで一括チェック
+        prompt = SYSTEM_PROMPTS['unified_quality_check'].format(checker=checker_str)
+        result_json = chat_with_retry(client, prompt, raw_transcript)
+        
+        workflow_progress.progress(1.0)
+        
+        # JSON結果の検証と整形
+        if result_json:
+            result_json = result_json.strip()
+            # JSON形式でない場合のフォールバック
+            if not (result_json.startswith('{') and result_json.endswith('}')):
+                st.warning("JSON変換に失敗したため、フォールバックJSONを作成します")
+                result_json = create_unified_fallback_json()
+        else:
+            st.warning("API呼び出しに失敗したため、フォールバックJSONを使用します")
+            result_json = create_unified_fallback_json()
+        
+        # 完了表示をクリア
+        status_text.empty()
+        workflow_progress.empty()
+        
+        return result_json
+        
+    except Exception as e:
+        st.error(f"統合ワークフロー実行エラー: {str(e)}")
+        return create_unified_fallback_json(error_message=str(e))
+
+def create_unified_fallback_json(error_message="処理エラー"):
+    """統合型ワークフロー用のフォールバックJSONを作成"""
+    fallback_json = {
+        "テレアポ担当者名": error_message,
+        "報告まとめ": [f"システムエラー: {error_message}"],
+        "社名や担当者名を名乗らない": error_message,
+        "アプローチで販売店名、ソフト名の先出し": error_message,
+        "同業他社の悪口等": error_message,
+        "運転中や電車内でも無理やり続ける": error_message,
+        "2回断られても食い下がる": error_message,
+        "暴言・悪口・脅迫・逆上": error_message,
+        "情報漏洩": error_message,
+        "共犯（教唆・幇助）": error_message,
+        "通話対応（無言電話／ガチャ切り）": error_message,
+        "呼び方": error_message,
+        "ロングコール": error_message,
+        "ガチャ切りされた△": error_message,
+        "当社の電話お断り": error_message,
+        "しつこい・何度も電話がある": error_message,
+        "お客様専用電話番号と言われる": error_message,
+        "口調を注意された": error_message,
+        "怒らせた": error_message,
+        "暴言を受けた": error_message,
+        "通報する": error_message,
+        "営業お断り": error_message,
+        "事務員に対して代表者のことを「社長」「オーナー」「代表」": error_message,
+        "一人称が「僕」「自分」「俺」": error_message,
+        "「弊社」のことを「うち」「僕ら」と言う": error_message,
+        "謝罪が「すみません」「ごめんなさい」": error_message,
+        "口調や態度が失礼": error_message,
+        "会話が成り立っていない": error_message,
+        "残債の「下取り」「買い取り」トーク": error_message,
+        "嘘・真偽不明": error_message,
+        "その他問題": error_message
+    }
+    return json.dumps(fallback_json, ensure_ascii=False, indent=2)
+
+def run_quality_check(conversation: str, openai_client, checkers: list) -> dict:
+    """
+    会話の品質チェックを実行し、結果を辞書形式で返す。
+    """
+    # 1. 担当者名を抽出する
+    checker_name = extract_checker_name(conversation, checkers, openai_client)
+    
+    # 2. 品質のチェック
+    try:
+        # 抽出した担当者名をシステムプロンプトに組み込む
+        # これにより、LLMは担当者名を事前に知った上で評価を行える
+        prompt_with_checker = f"この会話のテレアポ担当者は「{checker_name}」です。\n\n{SYSTEM_PROMPT}" if checker_name else SYSTEM_PROMPT
+        
+        raw_response = chat_with_retry(
+            client=openai_client, 
+            prompt=prompt_with_checker,
+            text=conversation
+        )
+        
+        # 不要なマークダウンを削除
+        cleaned_response = raw_response.replace("```json", "").replace("```", "").strip()
+        
+        # JSONパース
+        result = json.loads(cleaned_response)
+        
+        # 担当者名が抽出されていれば、結果に上書きする
+        if checker_name:
+            result["テレアポ担当者名"] = checker_name
+        
+        # 想定されるキーが全て存在するか確認
+        for key in SPREADSHEET_KEYS:
+            if key not in result:
+                result[key] = "（判定不能）" # or ""
+        
+        return result
+        
+    except json.JSONDecodeError:
+        st.error("❌ JSONの解析に失敗しました。LLMの応答が不正な形式です。")
+        st.code(cleaned_response, language="text")
+        return {key: "(JSONエラー)" for key in SPREADSHEET_KEYS}
+    except Exception as e:
+        st.error(f"❌ 品質チェック中に予期せぬエラーが発生しました: {e}")
+        return {key: "(システムエラー)" for key in SPREADSHEET_KEYS} 
